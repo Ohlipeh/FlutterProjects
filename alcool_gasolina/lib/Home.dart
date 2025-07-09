@@ -11,6 +11,34 @@ class _HomeState extends State<Home> {
 
   TextEditingController _controllerAlcool = TextEditingController();
   TextEditingController _controllerGasolina = TextEditingController();
+  String _textoResultado = "";
+
+  void _calcular(){
+    final precoAlcool = double.tryParse(_controllerAlcool.text);
+    final precoGasolina = double.tryParse(_controllerGasolina.text);
+
+
+    if( precoAlcool == null || precoGasolina == null){
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("Preços inválidos!"),
+              duration: Duration(seconds: 2),
+          ),
+      );
+      return;
+    }
+        setState(() {
+          _textoResultado = (precoAlcool / precoGasolina >= 0.7)
+          ?"Melhor abastecer com gasolina"
+          :"Melhor abastecer com álcool";
+    });
+    _limparCampos();
+  }
+
+  void _limparCampos (){
+    _controllerAlcool.text = "";
+    _controllerGasolina.text = "";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +92,7 @@ class _HomeState extends State<Home> {
               Padding(
                 padding: EdgeInsets.only(top: 10),
                 child: ElevatedButton(
-                    onPressed: (){},
+                    onPressed: _calcular,
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
@@ -75,13 +103,13 @@ class _HomeState extends State<Home> {
                       style: TextStyle(
                           fontSize: 20
                       ),
-                    )
+                    ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.only(top: 20),
                 child: Text(
-                  "Resultado",
+                  _textoResultado,
                   style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold
