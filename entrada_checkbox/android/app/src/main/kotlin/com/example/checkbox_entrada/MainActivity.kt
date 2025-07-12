@@ -1,4 +1,4 @@
-package com.example.checkbox_in
+package com.example.checkbox_entrada
 
 import io.flutter.embedding.android.FlutterActivity
 

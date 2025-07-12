@@ -8,7 +8,6 @@ class EntradaCheckbox extends StatefulWidget {
 }
 
 class _EntradaCheckboxState extends State<EntradaCheckbox> {
-
   bool _comidaBrasileira = false;
   bool _comidaMexicana = false;
 
@@ -16,71 +15,58 @@ class _EntradaCheckboxState extends State<EntradaCheckbox> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Entrada de dados"),
+        title: const Text("🍛 Preferências Culinárias"),
+        backgroundColor: Colors.green,
       ),
-      body: Container(
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          children: <Widget>[
+          children: [
             CheckboxListTile(
-              title: Text("Comida Brasileira",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold
-                ),
+              title: const Text(
+                "Comida Brasileira",
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-                subtitle: Text("A melhor do mundo!!"),
-                activeColor: Colors.green,
-                secondary: Icon(Icons.add_business),
-                value: _comidaBrasileira,
-                onChanged: (valor){
-                  setState(() {
-                    _comidaBrasileira = valor!;
-                   });
-                 }
-                ),
-
-            CheckboxListTile(
-                title: Text("Comida Mexicana",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold
-                  ),
-                ),
-                subtitle: Text("A melhor do mundo!!"),
-                activeColor: Colors.green,
-                secondary: Icon(Icons.add_business),
-                value: _comidaMexicana,
-                onChanged: (valor){
-                  setState(() {
-                    _comidaMexicana = valor!;
-                  });
-                }
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  print(
-                      "Comida Brasileira: " + _comidaBrasileira.toString() +
-                      "Comida Mexicana " + _comidaMexicana.toString()
-                  );
-                },
-                child: Text(
-                  "Salvar",
-                  style: TextStyle(
-                    fontSize: 20
-                  ),
-                )
-            )
-
-            /*
-            Text("Comida Brasileira"),
-            Checkbox(
-              value: _estaSelecionado,
-              onChanged: (valor){
+              subtitle: const Text("Feijoada, churrasco, etc."),
+              activeColor: Colors.green,
+              secondary: const Icon(Icons.restaurant),
+              value: _comidaBrasileira,
+              onChanged: (valor) {
                 setState(() {
-                  _estaSelecionado = valor!;
+                  _comidaBrasileira = valor!;
                 });
-                print("Checkbox:$valor");
               },
-            )
-             */
+            ),
+            CheckboxListTile(
+              title: const Text(
+                "Comida Mexicana",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text("Tacos, burritos, etc."),
+              activeColor: Colors.green,
+              secondary: const Icon(Icons.local_dining),
+              value: _comidaMexicana,
+              onChanged: (valor) {
+                setState(() {
+                  _comidaMexicana = valor!;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                final msg = "Brasileira: $_comidaBrasileira, Mexicana: $_comidaMexicana";
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(msg)),
+                );
+              },
+              icon: const Icon(Icons.save),
+              label: const Text("Salvar"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                minimumSize: const Size(double.infinity, 50),
+              ),
+            ),
           ],
         ),
       ),
