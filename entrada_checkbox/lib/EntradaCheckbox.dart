@@ -10,6 +10,7 @@ class EntradaCheckbox extends StatefulWidget {
 class _EntradaCheckboxState extends State<EntradaCheckbox> {
   bool _comidaBrasileira = false;
   bool _comidaMexicana = false;
+  bool _comidaAlema = false;
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +53,27 @@ class _EntradaCheckboxState extends State<EntradaCheckbox> {
                 });
               },
             ),
+            CheckboxListTile(
+              title: const Text(
+                "Comida Alemã",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text("Chucruti, Linguiça, etc."),
+              activeColor: Colors.green,
+              secondary: const Icon(Icons.local_dining),
+              value: _comidaAlema,
+              onChanged: (valor) {
+                setState(() {
+                  _comidaAlema = valor!;
+                });
+              },
+            ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                final msg = "Brasileira: $_comidaBrasileira, Mexicana: $_comidaMexicana";
+                final msg = "Brasileira: $_comidaBrasileira, "
+                    "Mexicana: $_comidaMexicana, "
+                    "Alema: $_comidaAlema";
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(msg)),
                 );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'EntradaCheckbox.dart';
 import 'EntradaRadioButto.dart';
+import 'ReceberNotificacao.dart';
+import 'EntradaSlider.dart';
 
 void main() => runApp(const MeuApp());
 
@@ -27,7 +29,9 @@ class TelaInicial extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("📋 Menu de Entrada de Dados"),
+        title: const Text("📋 Menu de Entrada de Dados",
+        style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: Padding(
@@ -67,6 +71,46 @@ class TelaInicial extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const EntradaRadioButto()),
+                );
+              },
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton.icon(
+              icon: const Icon(Icons.slideshow_rounded),
+              label: const Text(
+                "Dê sua nota",
+                style: TextStyle(fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                minimumSize: const Size(double.infinity, 60),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Entradaslider()),
+                );
+              },
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton.icon(
+              icon: const Icon(Icons.notifications_active),
+              label: const Text(
+                "Receber Notificações",
+                style: TextStyle(fontSize: 18),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                minimumSize: const Size(double.infinity, 60),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ReceberNotificacao()),
                 );
               },
             ),
