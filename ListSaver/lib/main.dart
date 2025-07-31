@@ -27,6 +27,7 @@ void main() async {
           child: Text('Erro na conexão: ${e.toString()}'),
         ),
       ),
+      debugShowCheckedModeBanner: false,
     ));
   }
 }
