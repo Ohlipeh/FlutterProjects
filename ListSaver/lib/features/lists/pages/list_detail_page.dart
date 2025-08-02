@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:listsaver/core/services/supabase_service.dart'; // Importe seu SupabaseService
 import 'package:listsaver/features/auth/providers/auth_provider.dart'; // Importe seu AuthProvider
 import 'dart:async'; // Importe para usar StreamSubscription
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 // Importe os novos widgets separados
 import 'package:listsaver/features/lists/pages/widgets/add_item_form.dart';
@@ -129,14 +130,14 @@ class _ListDetailPageState extends State<ListDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Por favor, insira o nome do item.'),
-          backgroundColor: Colors.red,
+          backgroundColor: Color.fromARGB(255, 36, 91, 79),
         ),
       );
       return;
     }
 
     try {
-      final response = await SupabaseService.client.from('item_lista').insert({ // Adicionado response
+      final response = await SupabaseService.client.from('item_lista',).insert({ // Adicionado response
         'id_lista': widget.listId,
         'nome_item_personalizado': itemName,
         'quantidade': 0.0,
@@ -152,7 +153,7 @@ class _ListDetailPageState extends State<ListDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Item adicionado com sucesso!'),
-          backgroundColor: Colors.green,
+          backgroundColor: Color.fromARGB(255, 36, 91, 79),
         ),
       );
     } catch (e) {
@@ -230,7 +231,7 @@ class _ListDetailPageState extends State<ListDetailPage> {
               child: Text(
                 'Esta lista está vazia.\nAdicione seu primeiro item!',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 36, 91, 79)),
               ),
             )
                 : ListView.builder(
@@ -278,17 +279,36 @@ class AddItemForm extends StatelessWidget {
         decoration: InputDecoration(
           labelText: 'Nome do Item',
           hintText: 'Ex: Arroz branco',
+          labelStyle: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 36, 91, 79),
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          prefixIcon: const Icon(Icons.shopping_bag_outlined),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 36, 91, 79), // Cor da borda quando desabilitado
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Color.fromARGB(255, 36, 91, 79), // Cor da borda quando focado
+              width: 2.0,
+            ),
+          ),
+          prefixIcon: const Icon(Icons.add_shopping_cart_rounded,
+            color: Color.fromARGB(255, 36, 91, 79),
+          ),
           suffixIcon: isAddingItem
               ? const Padding(
             padding: EdgeInsets.all(8.0),
             child: CircularProgressIndicator(strokeWidth: 2),
           )
               : IconButton(
-            icon: const Icon(Icons.add),
+            icon: const FaIcon(FontAwesomeIcons.plus,
+              color: Color.fromARGB(255, 36, 91, 79),
+            ),
             onPressed: onAddItem,
           ),
         ),
@@ -427,7 +447,7 @@ class _ListItemCardState extends State<ListItemCard> {
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                       decoration: _isComprado ? TextDecoration.lineThrough : null,
-                      color: _isComprado ? Colors.grey : null,
+                      color: _isComprado ? Color.fromARGB(255, 36, 91, 79) : null,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -435,7 +455,11 @@ class _ListItemCardState extends State<ListItemCard> {
                 const SizedBox(width: 16),
                 Text(
                   'R\$ ${total.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color.fromARGB(255, 36, 91, 79)
+                  ),
                 ),
               ],
             ),
@@ -448,6 +472,9 @@ class _ListItemCardState extends State<ListItemCard> {
                     focusNode: _quantityFocusNode,
                     decoration: const InputDecoration(
                       labelText: 'Qtd.',
+                      labelStyle: TextStyle(
+                        color: Color.fromARGB(255, 36, 91, 79)
+                      ),
                       isDense: true,
                       border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
                       contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -463,6 +490,9 @@ class _ListItemCardState extends State<ListItemCard> {
                     focusNode: _priceFocusNode,
                     decoration: const InputDecoration(
                       labelText: 'Preço',
+                      labelStyle: TextStyle(
+                        color: Color.fromARGB(255, 36, 91, 79)
+                      ),
                       isDense: true,
                       border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
                       contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -492,21 +522,25 @@ class TotalPriceFooter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        border: Border(top: BorderSide(color: Color.fromARGB(255, 36, 91, 79))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
             'Total da Lista:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color.fromARGB(255, 36, 91, 79)
+            ),
           ),
           Text(
             'R\$ ${totalPrice.toStringAsFixed(2)}',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).primaryColor,
+              color: Color.fromARGB(255, 36, 91, 79),
             ),
           ),
         ],

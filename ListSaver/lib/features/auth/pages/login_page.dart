@@ -1,200 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../shared/widgets/app_logo.dart';
+import '../../home/home_page.dart';
 import '../providers/auth_provider.dart';
 import 'signup_page.dart';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    final theme = Theme.of(context);
+    final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
-
-              // Logo do App
-              const AppLogo(size: 120),
-
-              const SizedBox(height: 20),
-
-              // Título com estilo personalizado
-              Text(
-                'Lista de Compras',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // 🔰 LOGO no topo
+                Image.asset(
+                  'imagem/logo_login1.png',
+                  width: 180,
+                  height: 180,
                 ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // Subtítulo
-              Text(
-                'Organize suas compras com facilidade',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey.shade600,
+                const SizedBox(height: 24),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: 'Email',
+                    labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 36, 91, 79)
+                    ),
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // Formulário de Login
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email, color: theme.colorScheme.primary),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Digite seu email';
-                        if (!value.contains('@')) return 'Email inválido';
-                        return null;
-                      },
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Senha',
+                    labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 36, 91, 79)
                     ),
-
-                    const SizedBox(height: 20),
-
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Senha',
-                        prefixIcon: Icon(Icons.lock, color: theme.colorScheme.primary),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Digite sua senha';
-                        if (value.length < 6) return 'Mínimo 6 caracteres';
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    if (authProvider.errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Text(
-                          authProvider.errorMessage!,
-                          style: TextStyle(color: theme.colorScheme.error),
-                        ),
-                      ),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: authProvider.isLoading
-                            ? null
-                            : () => _submitForm(authProvider),
-                        child: authProvider.isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : Text(
-                          'Entrar',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Links inferiores
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: auth.isLoading
+                      ? null
+                      : () async {
+                    await auth.signIn(
+                      emailController.text.trim(),
+                      passwordController.text.trim(),
+                    );
+                    if (auth.currentUser != null) {
+                      Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignupPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const HomePage()),
                       );
-                    },
-                    child: Text(
-                      'Criar conta',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ),
+                    }
+                  },
+                  child: const Text('Entrar',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 36, 91, 79)
                     ),
                   ),
-
-                  TextButton(
-                    onPressed: () {
-                      // Adicione navegação para recuperação de senha
-                    },
-                    child: Text(
-                      'Esqueceu a senha?',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.primary,
-                      ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const SignupPage()));
+                  },
+                  child: const Text('Criar conta',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(255, 36, 91, 79),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  )
+                ),
+                if (auth.errorMessage != null)
+                  Text(auth.errorMessage!,
+                      style: const TextStyle(color: Color.fromARGB(255, 36, 91, 79))),
+              ],
+            ),
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _submitForm(AuthProvider authProvider) async {
-    if (_formKey.currentState!.validate()) {
-      await authProvider.signIn(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
-
-      if (authProvider.currentUser != null && mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    }
   }
 }

@@ -144,7 +144,7 @@ class _MyListsPageState extends State<MyListsPage> {
               ),
               subtitle: Text(
                 'Criada em: ${_formatCreationDate(list['data_criacao'])}',
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: Color.fromARGB(255, 36, 91, 79)),
               ),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
@@ -156,7 +156,7 @@ class _MyListsPageState extends State<MyListsPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Erro: ID da lista não encontrado.'),
-                      backgroundColor: Colors.red,
+                      backgroundColor: Color.fromARGB(255, 36, 91, 79),
                     ),
                   );
                   return;

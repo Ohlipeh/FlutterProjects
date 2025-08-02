@@ -1,68 +1,172 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../core/services/supabase_service.dart';
 import '../auth/providers/auth_provider.dart';
-import '../auth/pages/login_page.dart'; // Importe sua LoginPage para navegação de logout
-import '../lists/pages/my_lists_page.dart'; // Importe MyListsPage
-import 'package:listsaver/features/lists/pages/list_create_page.dart'; // Importa a tela de criação de lista
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../lists/pages/list_detail_page.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class HomePage extends StatelessWidget {
+
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<Map<String, dynamic>> _listas = [];
+  final _nomeListaController = TextEditingController();
+  bool _carregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarListas();
+  }
+
+  Future<void> _carregarListas() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    final response = await Supabase.instance.client
+        .from('lista_compras')
+        .select()
+        .eq('id_usuario', userId)
+        .order('data_criacao', ascending: false);
+
+    setState(() {
+      _listas = response;
+      _carregando = false;
+    });
+  }
+
+  Future<void> _criarLista() async {
+    final nome = _nomeListaController.text.trim();
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+
+    if (nome.isEmpty || userId == null) return;
+
+    await Supabase.instance.client.from('lista_compras').insert({
+      'id_usuario': userId,
+      'nome_lista': nome,
+    });
+
+    _nomeListaController.clear();
+    _carregarListas();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
+    final auth = Provider.of<AuthProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: FutureBuilder(
-          future: _getUserProfile(authProvider.currentUser?.id ?? ''),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final apelido = snapshot.data?['apelido'];
-              return Text(apelido != null ? 'Olá, $apelido!' : 'Minhas Listas');
-            }
-            return const Text('Minhas Listas');
-          },
+        title: Text('Olá, ${auth.apelido ?? 'usuário'} 👋',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 36, 91, 79)
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await authProvider.signOut();
-              // Navega para a LoginPage após o logout, removendo todas as rotas anteriores.
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-                    (Route<dynamic> route) => false,
-              );
+            icon: const Icon(Icons.logout,
+              color: Color.fromARGB(255, 36, 91, 79),
+            ),
+            onPressed: () {
+              auth.signOut();
+              Navigator.pop(context);
             },
           ),
         ],
       ),
-      body: const MyListsPage(), // CORRIGIDO: Não passa listId e listName aqui
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navega para a tela de criação de lista quando o botão é pressionado.
-          // Usamos MaterialPageRoute para criar uma nova rota.
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const ListCreatePage(), // A tela que vamos criar
+      body: _carregando
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _nomeListaController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome da nova lista',
+                      labelStyle: TextStyle(
+                          color: Color.fromARGB(255, 36, 91, 79)
+                      ),
+                      border: OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color.fromARGB(255, 36, 91, 79), // Cor da borda quando desabilitado
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color.fromARGB(255, 36, 91, 79), // Cor da borda quando focado
+                          width: 2.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: _criarLista,
+                  child: const FaIcon(FontAwesomeIcons.cartPlus,
+                    color: Color.fromARGB(255, 36, 91, 79),
+                  ),
+                ),
+              ],
             ),
-          );
-        },
-        child: const Icon(Icons.add), // Ícone de adição
-        tooltip: 'Criar nova lista', // Dica de ferramenta de ferramenta para acessibilidade
+          ),
+          const Divider(),
+          Expanded(
+            child: _listas.isEmpty
+                ? const Center(
+              child: Text('Nenhuma lista criada ainda.'),
+            )
+                : ListView.builder(
+              itemCount: _listas.length,
+              itemBuilder: (context, index) {
+                final lista = _listas[index];
+                return ListTile(
+                  title: Text(lista['nome_lista'] ?? 'Sem nome',
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 36, 91, 79),
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                  subtitle: Text('Criada em: ${_formatarData(lista['data_criacao'])}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 36, 91, 79)
+                    ),
+                  ),
+                  trailing: const FaIcon(FontAwesomeIcons.basketShopping,
+                    color: Color.fromARGB(255, 36, 91, 79),
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ListDetailPage(
+                          listId: lista['id_lista'].toString(),
+                          listName: lista['nome_lista'] ?? 'Sem nome',
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Future<Map<String, dynamic>?> _getUserProfile(String userId) async {
-    if (userId.isEmpty) return null;
-    final response = await SupabaseService.client
-        .from('perfil_usuario')
-        .select()
-        .eq('id_usuario', userId)
-        .maybeSingle();
-    return response;
+  String _formatarData(String? dataIso) {
+    if (dataIso == null) return '';
+    final date = DateTime.parse(dataIso).toLocal();
+    return '${date.day}/${date.month}/${date.year}';
   }
 }
