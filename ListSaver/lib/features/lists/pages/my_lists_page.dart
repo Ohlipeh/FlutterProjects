@@ -140,7 +140,10 @@ class _MyListsPageState extends State<MyListsPage> {
             child: ListTile(
               title: Text(
                 (list['nome_lista']?.toString() ?? 'Lista Sem Nome'), // Converte explicitamente para String
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 36, 91, 79)
+                ),
               ),
               subtitle: Text(
                 'Criada em: ${_formatCreationDate(list['data_criacao'])}',

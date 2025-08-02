@@ -23,6 +23,7 @@ dependencies:
 
 
   cupertino_icons: ^1.0.8
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -46,5 +47,9 @@ flutter:
     - imagem/logo_login.png
     - imagem/logo_login1.png
 
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "imagem/icon.png"
 
 

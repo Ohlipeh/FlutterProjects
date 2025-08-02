@@ -97,7 +97,11 @@ class _ListCreatePageState extends State<ListCreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Criar Nova Lista'), // Título da barra superior
+        title: const Text('Criar Nova Lista',
+          style: TextStyle(
+            color: Color.fromARGB(255, 36, 91, 79)
+          ),
+        ), // Título da barra superior
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -111,6 +115,10 @@ class _ListCreatePageState extends State<ListCreatePage> {
                 decoration: const InputDecoration(
                   labelText: 'Nome da Lista',
                   hintText: 'Ex: Compras do Supermercado',
+                  labelStyle: TextStyle(
+                    color: Color.fromARGB(255, 36, 91, 79),
+                    fontWeight: FontWeight.bold
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
