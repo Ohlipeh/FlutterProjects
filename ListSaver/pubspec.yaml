@@ -20,6 +20,7 @@ dependencies:
   hive_flutter: ^1.1.0
   intl: ^0.18.1
   font_awesome_flutter: ^10.5.0
+  app_links: ^3.5.0
 
 
   cupertino_icons: ^1.0.8
@@ -43,8 +44,6 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - imagem/logo_list_saver.png
-    - imagem/logo_login.png
     - imagem/logo_login1.png
 
 flutter_launcher_icons:

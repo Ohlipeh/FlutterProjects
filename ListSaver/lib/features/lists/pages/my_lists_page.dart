@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:listsaver/core/services/supabase_service.dart'; // Importe seu SupabaseService
-import 'package:listsaver/features/auth/providers/auth_provider.dart'; // Importe seu AuthProvider
-import 'dart:async'; // Importe para usar StreamSubscription
-import 'package:listsaver/features/lists/pages/list_detail_page.dart'; // Importe a tela de detalhes da lista
+import 'package:supabase_flutter/supabase_flutter.dart'; // A única importação do Supabase necessária
+import 'package:listsaver/features/auth/providers/auth_provider.dart';
+import 'dart:async';
+import 'package:listsaver/features/lists/pages/list_detail_page.dart';
 
-// MyListsPage é o widget responsável por exibir as listas do usuário.
+// **REMOVIDO:** A importação do serviço antigo foi apagada.
+// import 'package:listsaver/core/services/supabase_service.dart';
+
 class MyListsPage extends StatefulWidget {
-  // Removi os parâmetros listId e listName, pois esta página exibe TODAS as listas.
   const MyListsPage({super.key});
 
   @override
@@ -15,35 +16,27 @@ class MyListsPage extends StatefulWidget {
 }
 
 class _MyListsPageState extends State<MyListsPage> {
-  // Lista para armazenar os dados das listas de compras.
   List<Map<String, dynamic>> _userLists = [];
-  // Estado de carregamento inicial.
   bool _isLoading = true;
-  // Objeto para gerenciar a inscrição em tempo real do Supabase.
   StreamSubscription<List<Map<String, dynamic>>>? _listSubscription;
 
   @override
   void initState() {
     super.initState();
-    // Inicia a escuta de listas em tempo real quando o widget é inicializado.
     _setupRealtimeListener();
   }
 
   @override
   void dispose() {
-    // Cancela a inscrição em tempo real quando o widget é descartado
-    // para evitar vazamentos de memória e chamadas desnecessárias.
     _listSubscription?.cancel();
     super.dispose();
   }
 
-  // Configura o listener de tempo real para a tabela 'lista_compras'.
   void _setupRealtimeListener() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.currentUser?.id;
 
     if (userId == null) {
-      // Se não houver userId, define como não carregando e lista vazia.
       setState(() {
         _isLoading = false;
         _userLists = [];
@@ -51,71 +44,108 @@ class _MyListsPageState extends State<MyListsPage> {
       return;
     }
 
-    // Cancela qualquer inscrição anterior para evitar duplicação.
     _listSubscription?.cancel();
 
-    // Cria uma stream para ouvir as mudanças na tabela 'lista_compras'.
-    // Filtra por 'id_usuario' para obter apenas as listas do usuário logado.
-    // Ordena por 'created_at' em ordem decrescente.
-    _listSubscription = SupabaseService.client
+    // **CORRIGIDO:** Usa a instância correta e autenticada do Supabase.
+    _listSubscription = Supabase.instance.client
         .from('lista_compras')
-        .stream(primaryKey: ['id_lista']) // Use a chave primária da sua tabela
+        .stream(primaryKey: ['id_lista'])
         .eq('id_usuario', userId)
-        .order('created_at', ascending: false) // Mantendo 'created_at' para ordenação por enquanto
+        .order('created_at', ascending: false)
         .listen((data) {
-      // Quando novos dados chegam (ou dados são alterados/removidos),
-      // atualiza o estado do widget com a nova lista.
-      setState(() {
-        _userLists = data;
-        _isLoading = false; // Define como não carregando após receber os dados.
-      });
+      if (mounted) {
+        setState(() {
+          _userLists = data;
+          _isLoading = false;
+        });
+      }
     }, onError: (error) {
-      // Lida com erros na stream.
       print('Erro na stream de listas: $error');
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao carregar listas: $error'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     });
   }
 
-  // Função auxiliar para formatar a data de criação.
-  String _formatCreationDate(dynamic dateValue) {
-    if (dateValue == null) {
-      return 'Data Indisponível';
-    }
+  Future<void> _deleteList(String listId, String listName) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar Exclusão'),
+          content: Text('Você tem certeza que deseja excluir a lista "$listName"? Esta ação não pode ser desfeita.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Excluir'),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
 
-    DateTime dateTime;
-    if (dateValue is String) {
-      // Tenta parsear como String (formato ISO 8601)
-      try {
-        dateTime = DateTime.parse(dateValue);
-      } catch (e) {
-        print('Erro ao parsear data como String: $e');
-        return 'Formato Inválido';
+    if (confirmed != true) return;
+
+    // --- ADICIONE ESTA LINHA AQUI ---
+    print('--- TESTE DE EXCLUSÃO ---');
+    print('Tentando excluir como usuário: ${Supabase.instance.client.auth.currentUser?.id}');
+    print('-------------------------');
+    // -------------------------------
+
+    final index = _userLists.indexWhere((list) => list['id_lista'] == listId);
+    if (index == -1) return;
+
+    final listToRemove = _userLists[index];
+
+    setState(() {
+      _userLists.removeAt(index);
+    });
+
+    try {
+      // **CORRIGIDO:** Usa a instância correta e autenticada do Supabase.
+      await Supabase.instance.client
+          .from('lista_compras')
+          .delete()
+          .eq('id_lista', listId);
+
+    } catch (e) {
+      print('FALHA AO EXCLUIR LISTA: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao excluir a lista. Restaurando...'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          _userLists.insert(index, listToRemove);
+        });
       }
-    } else if (dateValue is int) {
-      // Se for int, assume que é um timestamp em milissegundos
-      dateTime = DateTime.fromMillisecondsSinceEpoch(dateValue);
-    } else {
-      return 'Tipo de Data Inválido';
     }
-    return dateTime.toLocal().toString().split(' ')[0]; // Retorna apenas a parte da data
+  }
+
+  String _formatCreationDate(dynamic dateValue) {
+    if (dateValue == null) return 'Data Inválida';
+    try {
+      return DateTime.parse(dateValue.toString()).toLocal().toString().split(' ')[0];
+    } catch (e) {
+      return 'Data Inválida';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Se estiver carregando, exibe um indicador de progresso.
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Se não houver listas, exibe a mensagem para criar a primeira lista.
     if (_userLists.isEmpty) {
       return const Center(
         child: Text(
@@ -125,56 +155,58 @@ class _MyListsPageState extends State<MyListsPage> {
         ),
       );
     } else {
-      // Se houver listas, exibe-as em um ListView.
       return ListView.builder(
         padding: const EdgeInsets.all(16.0),
         itemCount: _userLists.length,
         itemBuilder: (context, index) {
           final list = _userLists[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8.0),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: ListTile(
-              title: Text(
-                (list['nome_lista']?.toString() ?? 'Lista Sem Nome'), // Converte explicitamente para String
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 36, 91, 79)
-                ),
-              ),
-              subtitle: Text(
-                'Criada em: ${_formatCreationDate(list['data_criacao'])}',
-                style: const TextStyle(color: Color.fromARGB(255, 36, 91, 79)),
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                // Garante que id_lista e nome_lista são Strings antes de passar
-                final String listId = list['id_lista']?.toString() ?? '';
-                final String listName = (list['nome_lista']?.toString() ?? 'Lista Sem Nome');
+          final String listId = list['id_lista']?.toString() ?? '';
+          final String listName = list['nome_lista']?.toString() ?? 'Lista Sem Nome';
 
-                if (listId.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Erro: ID da lista não encontrado.'),
-                      backgroundColor: Color.fromARGB(255, 36, 91, 79),
+          return Dismissible(
+            key: ValueKey(listId),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              _deleteList(listId, listName);
+            },
+            background: Container(
+              color: Colors.red,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              alignment: Alignment.centerRight,
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            child: Card(
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: ListTile(
+                title: Text(
+                  listName,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 36, 91, 79)),
+                ),
+                subtitle: Text(
+                  'Criada em: ${_formatCreationDate(list['data_criacao'])}',
+                  style: const TextStyle(color: Color.fromARGB(255, 36, 91, 79)),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  if (listId.isEmpty) {
+                    return;
+                  }
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ListDetailPage(
+                        listId: listId,
+                        listName: listName,
+                      ),
                     ),
                   );
-                  return;
-                }
-
-                // CORRIGIDO: Navega para ListDetailPage, não para MyListsPage
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ListDetailPage(
-                      listId: listId,
-                      listName: listName,
-                    ),
-                  ),
-                );
-              },
+                },
+              ),
             ),
           );
         },
@@ -182,3 +214,4 @@ class _MyListsPageState extends State<MyListsPage> {
     }
   }
 }
+

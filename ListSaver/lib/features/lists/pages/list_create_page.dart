@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:listsaver/core/services/supabase_service.dart'; // Importe seu SupabaseService
-import 'package:listsaver/features/auth/providers/auth_provider.dart'; // Importe seu AuthProvider
+import 'package:listsaver/features/auth/providers/auth_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // Importe seu AuthProvider
 
 // ListCreatePage é o widget para criar uma nova lista.
 class ListCreatePage extends StatefulWidget {
@@ -58,7 +58,7 @@ class _ListCreatePageState extends State<ListCreatePage> {
     try {
       // Insere a nova lista na tabela 'lista_compras' do Supabase.
       // Corrigido: 'nome' para 'nome_lista'
-      await SupabaseService.client.from('lista_compras').insert({
+      await Supabase.instance.client.from('lista_compras').insert({
         'nome_lista': listName, // <--- NOME DA COLUNA CORRIGIDO AQUI!
         'id_usuario': userId,
         // 'created_at' será preenchido automaticamente pelo Supabase se configurado.
