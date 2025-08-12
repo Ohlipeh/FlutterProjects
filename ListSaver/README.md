@@ -13,17 +13,17 @@ Interface intuitiva: Navegação simples e design limpo para uma ótima experiê
 📱 Screenshots
 Aqui estão algumas telas do aplicativo para você ter uma ideia de como ele funciona:
 
-Tela principal login:
+* **Tela principal de login:**
 
-![screenshots/tela_login.png]
+    ![Tela de login do Listsaver](screenshots/tela_login.png)
 
-Tela de criação de uma nova lista:
+* **Tela de criação de uma nova lista:**
 
-![screenshots/criacao_lista.png]
+    ![Tela de criação de uma nova lista](screenshots/criacao_lista.png)
 
-Detalhes de uma lista:
+* **Detalhes de uma lista:**
 
-![sreenshots/detalhes_da_lista.png]
+    ![Detalhes de uma lista](screenshots/detalhes_da_lista.png)
 
 <br>
 
